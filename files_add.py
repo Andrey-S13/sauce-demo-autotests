@@ -1,6 +1,3 @@
-'https://omz-software.com/pythonista/docs/ios/faker.html'
-'https://faker.readthedocs.io/en/master/providers/faker.providers.person.html'
-
 import time
 
 from selenium import webdriver
@@ -8,53 +5,66 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver import Keys
 from selenium.webdriver.chrome.service import Service
 
-from faker import Faker
 
-faker = Faker('ru_Ru')  # Экземпляр класса Faker для генерации случайных данных на русском
-
-name = faker.name() + str(faker.random_int())
-print(name)
-# Ярополк Терентьевич Пахомов9921
-
-date = faker.date_between(start_date='-30y', end_date='now')
-print(date)
-# 1996-08-26
-
-random = faker.sentence()
-print(random)
-# Вариант лиловый плясать дьявол посвятить.
-
-birthday = faker.date_of_birth()
-print(birthday)
-# 1925-05-03
-
-url = faker.url()
-print(url)
-# http://www.zao.biz/
-
-
-name = faker.first_name() + str(faker.random_int())
-pswd = faker.password()
-print(name)
-print(pswd)
-
-# options = webdriver.ChromeOptions()
-# options.add_experimental_option("detach", True)  # Чтобы автоматически не закрывался браузер
-# g = Service()  # Управляет процессом ChromeDriver (остановка / запуск), передача доп. парам. в него
-
-driver = webdriver.Chrome() # Внутри можно передать (options=options, service=g)
-
-driver.get("https://www.saucedemo.com/")
+driver = webdriver.Chrome()
+driver.get("https://www.testmu.ai/selenium-playground/upload-file-demo/")
 driver.maximize_window()
+time.sleep(1)
+
+path_upload = "/Users/andrey/PycharmProjects/PythonProject/Files_upload/Снимок экрана 2026-01-11 в 22.24.14.png"
+
+click_button = driver.find_element(By.XPATH, "//input[@class='w-full']")
+click_button.send_keys(path_upload)
 time.sleep(3)
 
-user_name = driver.find_element(By.XPATH, "//input[@id='user-name']")
-user_name.send_keys(name)
-print("Login - OK")
+successful_text = "File Successfully Uploaded"
 
-password = driver.find_element(By.XPATH, "//input[@id='password']")
-password.send_keys(pswd)
-print("Password - OK")
-
+text_successful_upload = driver.find_element(By.XPATH, "//div[@id='error']")
+value_text_successful_upload = text_successful_upload.text
+assert value_text_successful_upload == successful_text
 time.sleep(2)
+print("assert 1 - OK")
+
+# Полное наименование файла на компе
+
+computer_file_name = "Снимок экрана 2026-01-11 в 22.24.14.png"
+
+# Находим, какой путь сохраняет браузер в value
+# value - это атрибут, который содержит у <input type="file"> полный путь к файлу / имя файла
+
+value_upload_path = click_button.get_attribute("value")
+print(value_upload_path)
+# C:\fakepath\Снимок экрана 2026-01-11 в 22.24.14.png - полученное значение
+# fakepath - скрывает полный путь для безопасности (в современных браузерах везде)
+
+
+# Шлифуем название файла
+
+import re
+
+value_upload_path = "C:\fakepath\Снимок экрана 2026-01-11 в 22.24.14.png"  # полученный путь в браузере
+
+match = re.search(r'[\\/]([^\\/]+)$', value_upload_path)
+
+# Без r пришлось бы писать: '[\\\\/]([^\\\\/]+)$'
+# Фактически, перечисляем символы, которые нам нужны: \ и /
+# Символ \ нужно экранировать как \\
+# Ищет ЛЮБОЙ из этих символов: \ или /
+# [^  ] - отрицание (не ищем другие элементы, кроме перечисленных)
+# + - одно и более совпадений
+# $ - якорь. Нужен, чтобы текст брался до конца строки
+
+if match:
+    browser_file_name = match.group(1)
+    print(browser_file_name)
+    # Снимок экрана 2026-01-11 в 22.24.14.png
+
+# Сверяем название подгруженного файла / факт подгрузки файла (НЕ на сервер)
+
+current_file_name = driver.find_element(By.CSS_SELECTOR, "input#file.w-full")
+value_current_file_name = current_file_name.text
+print(value_current_file_name)
+assert computer_file_name == browser_file_name
+time.sleep(2)
+print("assert 2 - OK")
 

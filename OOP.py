@@ -137,3 +137,87 @@ warrior.desctiption_person()
 
 print("Нового человека зовут: " + warrior.desctiption_person())  # Если в методе используется "return description"
 # Нового человека зовут: Aragorn, ему 35, его заряд ярости 100
+
+
+
+"""Урок наследование классов"""
+
+class Alphabet:
+    """Класс по созданию и работе с алфавитом"""
+    def __init__(self, title, abbreviation, list_letters):
+        self.title = title
+        self.abbreviation = abbreviation
+        self.list_letters = list_letters
+        print("Новый алфавит создан")
+
+
+    def description(self):
+        """Получение описания алфавита"""
+        description = (f"Название данного алфавита - {self.title}, его аббревиатура - {self.abbreviation},"
+                       f" список букв - {self.list_letters}")
+        print(description)
+
+
+    def count_letter(self):
+        """Количества букв в алфавите"""
+        count = (len(self.list_letters))
+        print(f"Количество букв в алфавите равно: {count}")
+
+
+
+class Cyrillic(Alphabet):
+    """Языки группы Кириллица"""
+
+    def __init__(self, title, abbreviation, list_letters):
+        super().__init__(title, abbreviation, list_letters)
+        """Указываем какие атрибуты имеет Класс-наследник"""
+
+serbian = Cyrillic("Сербский", "SR", "абвгдђежзијклмнњопрстћуфхцчџшыэ")
+serbian.description()
+serbian.count_letter()
+
+# Новый алфавит создан
+# Название данного алфавита - Сербский, его аббревиатура - SR, список букв - абвгдђежзијклмнњопрстћуфхцчџшыэ
+# Количество букв в алфавите равно: 31
+
+
+
+
+class Cyrillic(Alphabet):
+    """Языки группы Кириллица"""
+
+    def __init__(self, title, abbreviation, list_letters):
+        super().__init__(title, abbreviation, list_letters)
+        """Указываем какие атрибуты имеет Класс-наследник"""
+        self.language_group = "Cyrl"
+
+    def description(self):
+        """Получение описания алфавита"""
+        description = (f"Название данного алфавита - {self.title}, группа языков - {self.language_group},"
+                          f"его аббревиатура - {self.abbreviation}, список букв - {self.list_letters}")
+        print(description)
+
+    def get_language_group(self):
+        """Метод возвращающий аббревиатуру языковой группы"""
+        print(f"Аббревиатура языковой группы {self.language_group}")
+        return self.language_group
+
+
+serbian = Cyrillic("Сербский", "SR", "абвгдђежзијклмнњопрстћуфхцчџшыэ")
+serbian.description()
+# Новый алфавит создан
+# Название данного алфавита - Сербский, группа языков - Cyrl,его аббревиатура - SR, список букв - абвгдђежзијклмнњопрстћуфхцчџшыэ
+
+russian = Alphabet("Русский", "RU", "абвгдеёжзийклмнопрстуфхцчшщъыьэюя")
+russian.description()
+# Новый алфавит создан
+# Название данного алфавита - Русский, его аббревиатура - RU, список букв - абвгдеёжзийклмнопрстуфхцчшщъыьэюя
+
+serbian = Cyrillic("Сербский", "SR", "абвгдђежзијклмнњопрстћуфхцчџшыэ")
+serbian.get_language_group()
+# Новый алфавит создан
+# Аббревиатура языковой группы Cyrl
+
+
+"""Урок импортирование классов"""
+

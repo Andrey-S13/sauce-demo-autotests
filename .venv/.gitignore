@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyCharm
+../.idea/
+*.iml
+*.ipr
+*.iws
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Selenium и браузеры
+*.log
+geckodriver.log
+chromedriver.log
+*.png  # если не хотите коммитить скриншоты
+
+# Системные файлы
+.DS_Store
+Thumbs.db
