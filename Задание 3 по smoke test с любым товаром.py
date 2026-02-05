@@ -1,59 +1,80 @@
 import time
+from selenium import webdriver  # инструмент для автоматизации браузера
+from selenium.webdriver.common.by import By  # поиск элементов на странице
+from selenium.webdriver.common import keys  # инструменты взаимодействия с элементами на странице
+from selenium.webdriver.support.wait import WebDriverWait  # явное ожидание элементов
+from selenium.webdriver.support import expected_conditions as EC  # условное ожидание элементов
+from selenium.webdriver.chrome.options import Options  # настройки браузера Chrome
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common import keys
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
 
-
-# Словарь для поиска товара по введенному ключу
-products = {
-    1: "Sauce Labs Backpack",
-    2: "Sauce Labs Bike Light",
-    3: "Sauce Labs Bolt T-Shirt",
-    4: "Sauce Labs Fleece Jacket",
-    5: "Sauce Labs Onesie",
-    6: "Test.allTheThings() T-Shirt (Red)"
-}
-
-def product_search():
-    """Поиск товара по введенному ключу"""
-
-    print("Приветствую тебя в нашем интернет - магазине")
-
-    # создаем новый список для перечисления в print
-    item_list = []
-    for key, value in products.items():
-        item_list.append(f"{key} - {value}")
-
-    print(f"Выбери один из следующих товаров и укажи его номер: {', '.join(item_list)}")
-
-    try:
-        key = int(input())
-
-        if key in products:
-            print(f"Выбран товар: {products[key]} ")
-            print("-" * 20)  # разделитель текста (здесь и далее)
-        else:
-            print("Товар не выбран или не найден")
-            print("-" * 20)
-
-    except ValueError:
-        print("Ошибка: введите число!")
-        print("-" * 20)
+# def product_search():
+#     """Поиск товара по введенному ключу"""
+#
+#     print("Приветствую тебя в нашем интернет - магазине")
+#
+#     # создаем новый список для перечисления в print
+#     item_list = []
+#     for key, value in products.items():
+#         item_list.append(f"{key} - {value}")
+#
+#     print(f"Выбери один из следующих товаров и укажи его номер: {', '.join(item_list)}")
+#
+#     try:
+#         key = int(input())
+#
+#         if key in products:
+#             print(f"Выбран товар: {products[key]} ")
+#             print("-" * 20)  # разделитель текста (здесь и далее)
+#         else:
+#             print("Товар не выбран или не найден")
+#             print("-" * 20)
+#
+#     except ValueError:
+#         print("Ошибка: введите число!")
+#         print("-" * 20)
 
 
 
 class SauceDemoSmokeTest:
-    """Smoke тест по покупке товара в интернет магазине Sauce Demo"""
+    """Класс для Smoke теста по покупке товара в интернет магазине Sauce Demo"""
 
-    def __init__(self, key):
-        self.driver = None
-        self.key = key
-        """Запуск выбора товара ДО инициализации драйвера"""
-        product_search()
+    # Словарь для поиска товара по введенному ключу
+    products = {
+        1: "Sauce Labs Backpack",
+        2: "Sauce Labs Bike Light",
+        3: "Sauce Labs Bolt T-Shirt",
+        4: "Sauce Labs Fleece Jacket",
+        5: "Sauce Labs Onesie",
+        6: "Test.allTheThings() T-Shirt (Red)"
+    }
+
+"""
+Добавить методы для преобразования словаря в lowercase + "-" + фразы
+
+add-to-cart-sauce-labs-backpack - значение ID для добавления в корзину
+remove-sauce-labs-backpack -  # значение ID для добавления в корзину
+"""
+
+
+
+    def __init__(self):
+        """
+        Конструктор класса. Вызывается при СОЗДАНИИ объекта
+        Инициализирует пустые переменные.
+        """
+        self.driver = None  # хранение браузера
+        self.selected_product_key = None  # хранение выбранного товара (1-6)
+        self.selected_product_name = None  # хранение выбранного товара (имя)
+
+
+
+
+
+    # ++++++++++++++++++++++++++++++++
+    # ________________________________
+
+    # ++++++++++++++++++++++++++++++++
+    # ________________________________
 
 
     def setup_browser(self):
@@ -292,3 +313,18 @@ test = SauceDemoSmokeTest(product_search)
 #     print("Тест не пройден!")
 #
 # print("=" * 60)
+
+
+
+"""
+1. Запускаем программу
+2. Программа спрашивает: "Какой товар тестируем? (1-6)"
+3. Пользователь вводит число (например, 3)
+4. Программа запоминает: "тестируем товар №3"
+5. Открывается браузер
+6. Автоматически вводится логин/пароль
+7. Автоматически добавляется товар №3 в корзину
+8. Проверяется, что товар добавился
+9. Браузер закрывается
+10. Программа говорит: "Тест пройден!" или "Ошибка!"
+"""
