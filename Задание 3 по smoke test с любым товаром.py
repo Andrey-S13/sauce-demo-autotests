@@ -48,12 +48,12 @@ class SauceDemoSmokeTest:
         6: "Test.allTheThings() T-Shirt (Red)"
     }
 
-"""
-Добавить методы для преобразования словаря в lowercase + "-" + фразы
-
-add-to-cart-sauce-labs-backpack - значение ID для добавления в корзину
-remove-sauce-labs-backpack -  # значение ID для добавления в корзину
-"""
+    """
+    Добавить методы для преобразования словаря в lowercase + "-" + фразы
+    
+    add-to-cart-sauce-labs-backpack - значение ID для добавления в корзину
+    remove-sauce-labs-backpack -  # значение ID для добавления в корзину
+    """
 
 
 
