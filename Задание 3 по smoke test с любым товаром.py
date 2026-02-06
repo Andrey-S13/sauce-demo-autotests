@@ -75,7 +75,6 @@ class SauceDemoSmokeTest:
         self.driver.maximize_window()  # на весь экран
 
         print("Настройка браузера инициализирована")
-
         return self.driver
 
     def authorization(self):
@@ -130,12 +129,12 @@ class SauceDemoSmokeTest:
         """
         # ID локатор "add-to-cart-"
         ID_add_product = self.products[self.selected_product_key]
-        ID_add = f"add-to-cart-{ID_add_product.lower().replace(" ", "-")}"
+        ID_add = f"add-to-cart-{ID_add_product.lower().replace(' ', '-')}"
         print(f"Отладка. Локатор ID_add: {ID_add}")
 
         # ID локатор "remove-"
         ID_add_product = self.products[self.selected_product_key]
-        ID_remove = f"remove-{ID_add_product.lower().replace(" ", "-")}"
+        ID_remove = f"remove-{ID_add_product.lower().replace(' ', '-')}"
         print(f"Отладка. Локатор ID_remove: {ID_remove}")
 
         # Добавление товара в корзину
@@ -143,11 +142,14 @@ class SauceDemoSmokeTest:
         button_add_item.click()
         print(f"Товар '{ID_add_product}' добавлен в корзину")
         print("-" * 20)  # разделитель текста
-        time.sleep(5)
+        time.sleep(2)
 
         # Проверки
         try:
             # Cмена названия кнопки на Remove
+
+            # двойные скобки, чтобы система не думала, что у нас два аргумента
+            # ((внешние скобки - вызов метода, внутренние - один кортеж-аргумент))
             remove_button = WebDriverWait(self.driver, 10).until(
                 EC.visibility_of_element_located((By.ID, ID_remove))
             )
@@ -172,126 +174,52 @@ class SauceDemoSmokeTest:
             return False
 
 
+    def verify_product_in_cart(self):
+        """Проверка товара в корзине"""
+        try:
+            # переход в корзину
+            cart_link = WebDriverWait(self.driver,10).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, "shopping_cart_link"))
+            )
+            cart_link.click()
+            print("Переход в корзину выполнен")
+            time.sleep(2)
 
+            # проверка url корзины
+            WebDriverWait(self.driver, 10).until(
+                EC.url_to_be("https://www.saucedemo.com/cart.html")
+            )
+            print("Current url: https://www.saucedemo.com/cart.html")
 
+            # проверка названия товара
+            cart_product_name = WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "inventory_item_name"))
+            )
+            assert cart_product_name.text == product_name
+            print(f"Название товара в корзине корректно: {product_name}")
 
-#
-#     def check_product_in_cart(self):
-#         """Проверка добавления нужного товара в корзину с отладкой"""
-#         try:
-#             print("\n🔍 Начинаем проверку корзины...")
-#
-#             # Сначала проверим текущее состояние страницы
-#             print(f"Текущий URL: {self.driver.current_url}")
-#
-#             # Дадим немного времени на обновление страницы
-#             time.sleep(1)
-#
-#             # Первая проверка - кнопка Remove
-#             ID_button_remove = self.get_remove_id()
-#             print(f"Ищем кнопку с ID: {ID_button_remove}")
-#
-#             # Пробуем найти элемент разными способами
-#             try:
-#                 # Быстрая попытка
-#                 remove_button = self.driver.find_element(By.ID, ID_button_remove)
-#                 print(f"Кнопка найдена через find_element, текст: '{remove_button.text}'")
-#             except:
-#                 print("Кнопка не найдена сразу, используем WebDriverWait...")
-#                 remove_button = WebDriverWait(self.driver, 10).until(
-#                     EC.presence_of_element_located((By.ID, ID_button_remove))
-#                 )
-#                 print(f"Кнопка найдена после ожидания, текст: '{remove_button.text}'")
-#
-#             # Проверяем текст кнопки
-#             if remove_button.text == "Remove":
-#                 print(f"✓ Кнопка 'Remove' найдена для товара '{self.products[self.product_key]}'")
-#             else:
-#                 print(f"✗ Неверный текст кнопки: '{remove_button.text}' вместо 'Remove'")
-#                 return False
-#
-#             # Вторая проверка - счетчик корзины
-#             print("\n🔍 Проверяем счетчик корзины...")
-#
-#             # Проверяем все элементы с классом shopping_cart_badge
-#             badges = self.driver.find_elements(By.CLASS_NAME, "shopping_cart_badge")
-#             print(f"Найдено элементов с классом shopping_cart_badge: {len(badges)}")
-#
-#             if len(badges) == 0:
-#                 print("✗ Значок корзины не найден!")
-#                 # Делаем скриншот для отладки
-#                 self.driver.save_screenshot("debug_no_badge.png")
-#                 print("Скриншот сохранен как debug_no_badge.png")
-#                 return False
-#
-#             cart_badge = badges[0]
-#             badge_text = cart_badge.text
-#             print(f"Текст значка: '{badge_text}'")
-#
-#             if badge_text == "1":
-#                 print(f"✓ Счетчик корзины корректен: {badge_text}")
-#             else:
-#                 print(f"✗ Неверный счетчик: '{badge_text}' вместо '1'")
-#                 return False
-#
-#             print("\n✅ Все проверки пройдены успешно!")
-#             return True
-#
-#         except Exception as e:
-#             print(f"\n❌ Критическая ошибка: {type(e).__name__}: {e}")
-#             import traceback
-#             traceback.print_exc()
-#             return False
-#
-#     def verify_product_in_cart(self):
-#         """Проверка товара в корзине"""
-#         try:
-#             # переход в корзину
-#             cart_link = WebDriverWait(self.driver,10).until(
-#                 EC.element_to_be_clickable((By.CLASS_NAME, "shopping_cart_link"))
-#             )
-#             cart_link.click()
-#             print("Переход в корзину выполнен")
-#
-#             # проверка url корзины
-#             WebDriverWait(self.driver, 10).until(
-#                 EC.url_to_be("https://www.saucedemo.com/cart.html")
-#             )
-#
-#             # проверка названия товара
-#             cart_product_name = WebDriverWait(self.driver, 10).until(
-#                 EC.presence_of_element_located(By.CLASS_NAME, ["inventory_item_name"])
-#             )
-#             assert cart_product_name.text == products[product_key]
-#             print(f"Название товара в корзине корректно: {products[product_key]}")
-#
-#             return True
-#
-#         except Exception as e:
-#             print(f"Ошибка при проверке корзины: {e}")
-#             return False
-#
-#
-#
-# Запуск теста
+            # цена товара в корзине
+            value_xpath = "//*[@id='cart_contents_container']/div/div[1]/div[3]/div[2]/div[2]/div"
+            price_cart_inventory_one = self.driver.find_element(By.XPATH, {value_xpath})
 
-print("Запуск автоматизированного тестирования Sauce Demo")
-print("-" * 20)
+            # цена товара на витрине
+            price_number = product_key
+            inventory_item_price = self.driver.find_element(By.CLASS_NAME, "inventory_item_price[price_number]")
+            value_price_inventory = inventory_item_price.text
 
+            # сверка цены
+            value_price_cart_inventory_one = price_cart_inventory_one.text
+            assert value_price_cart_inventory_one == value_price_inventory
+            print(value_price_cart_inventory_one)
 
+            print(f"Цена товара в корзине корректна: {value_price_cart_inventory_one}")
 
-# test.run()  # Вызываем основной метод, который вызывает все остальные
-# )
-#
-# # Выполняем проверку
-# if test_framework.check_product_in_cart():
-#     print("=" * 60)
-#     print("Тест пройден успешно!")
-# else:
-#     print("=" * 60)
-#     print("Тест не пройден!")
-#
-# print("=" * 60)
+            return True
+
+        except Exception as e:
+            print(f"Ошибка при проверке корзины: {e}")
+            return False
+
 
 
 if __name__ == "__main__":
@@ -308,7 +236,9 @@ if __name__ == "__main__":
     result_authorization = test.authorization()
     # сохраняем значение переменной в атрибуте объекта (чтобы не падала ошибка KeyError: None)
     test.selected_product_key = product_key
+    test.selected_product_name = product_name
     result_add_product = test.add_product_in_cart()
+    result_verify_cart = test.verify_product_in_cart()
 
 
 
