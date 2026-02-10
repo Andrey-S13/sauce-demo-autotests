@@ -10,16 +10,6 @@ from selenium.webdriver.chrome.options import Options  # настройки бр
 class SauceDemoSmokeTest:
     """Класс для Smoke теста по покупке товара в интернет магазине Sauce Demo"""
 
-    # Словарь для поиска товара по введенному ключу
-    products = {
-        1: "Sauce Labs Backpack",
-        2: "Sauce Labs Bike Light",
-        3: "Sauce Labs Bolt T-Shirt",
-        4: "Sauce Labs Fleece Jacket",
-        5: "Sauce Labs Onesie",
-        6: "Test.allTheThings() T-Shirt (Red)"
-    }
-
     def __init__(self):
         """
         Конструктор класса. Вызывается при СОЗДАНИИ объекта
@@ -28,36 +18,7 @@ class SauceDemoSmokeTest:
         self.driver = None  # хранение браузера
         self.selected_product_key = None  # хранение выбранного товара (1-6)
         self.selected_product_name = None  # хранение выбранного товара (имя)
-
-    @classmethod  # декоратор для обозначения метода класса, а не объекта
-    def select_product(cls):  # ссылка на сам класс
-        """
-        класс-метод можно вызвать БЕЗ создания объекта. Т.е. сначала отработает захардкоженная часть по заданию
-        """
-        print("-" * 20)  # разделитель текста
-        print("Приветствую тебя в нашем интернет - магазине.")
-        print(f"Выбери один из следующих товаров и укажи его номер: \n")
-
-        for key, value in cls.products.items():  # обращаемся к словарю класса (не объекта)
-            print(f"{key} - {value}")  # показываем товар "1..", "2.." и т.д.
-
-        while True:  # бесконечный цикл, пока не поймаем число
-            try:
-                product_key = int(input("\nВведите номер товара от 1 до 6: "))
-
-                if product_key in cls.products:
-                    product_name = cls.products[product_key]
-
-                    print(f"Выбран товар: {product_key} - {product_name}")
-                    print("-" * 20)
-
-                    return product_key, product_name
-
-                else:
-                    print("Ошибка выбора номера товара")
-
-            except ValueError:
-                print("Ошибка ввода: недопустимый символ")
+        self.selected_product_price = None  # хранение цены выбранного товара
 
     def setup_browser(self):
         """Настройка браузера"""
@@ -77,6 +38,31 @@ class SauceDemoSmokeTest:
 
         print("Настройка браузера инициализирована")
         return self.driver
+
+    def select_product(self):
+        """
+        Захардкорженная часть - приветствие и выбор товара
+        """
+        print("-" * 20)  # разделитель текста
+        print("Приветствую тебя в нашем интернет - магазине.")
+        print(f"Выбери один из следующих товаров и укажи его номер: 1 - Sauce Labs Backpack, " 
+        f"2 - Sauce Labs Bike Light, 3 - Sauce Labs Bolt T-Shirt, 4 - Sauce Labs Fleece Jacket, "
+        f"5 - Sauce Labs Onesie, 6 - Test.allTheThings() T-Shirt (Red)")
+        product_key = int(input("\nВведите номер товара от 1 до 6: "))
+        self.selected_product_key = product_key  # сохраняем в атрибуте
+        print(product_key)
+
+        return product_key
+
+    def select_item(self):
+        """Выбор товара через введенное число"""
+        # (// div[@ data-test='inventory-item-name'])[1]
+        product_key = self.selected_product_key
+        selected_item = self.driver.find_element(By.XPATH, f"(//div[@data-test='inventory-item-name'])[{product_key}]")
+        product_name = selected_item.text
+        self.selected_product_name = product_name
+        print(f"Выбран товар: {product_key} - {product_name}")
+        print("-" * 20)
 
     def authorization(self):
         """Авторизация пользователя"""
@@ -113,41 +99,25 @@ class SauceDemoSmokeTest:
 
     def add_product_in_cart(self):
         """
-        1. Составление ID локатора для поиска элемента "add to cart" (добавить в корзину):
-            1.1 Пробелы заменены на "-"
-            1.2 Регистр lowercase
-            1.3 Добавляется конструкция "add-to-cart-"
-
-        2 Составление ID локатора для поиска элемента "remove-" (удалить из корзины):
-            2.1 [см 1.1...]
-            2.2 [см 1.2...]
-            2.3 Добавляется конструкция "remove-"
-
-        3. Добавление товара в корзину
-        4. Определение цены товара
-        5. Проверки:
-            5.1 Смена кнопки на Remove
-            5.2 Счетчик корзины +1
+        1. Добавление товара в корзину
+        2. Определение цены товара
+        3. Проверки:
+            3.1 Смена кнопки на Remove
+            3.2 Счетчик корзины +1
         """
-        # ID локатор "add-to-cart-"
-        ID_add_product = self.products[self.selected_product_key]
-        ID_add = f"add-to-cart-{ID_add_product.lower().replace(' ', '-')}"
-        print(f"Отладка. Локатор ID_add: {ID_add}")
-
-        # ID локатор "remove-"
-        ID_add_product = self.products[self.selected_product_key]
-        ID_remove = f"remove-{ID_add_product.lower().replace(' ', '-')}"
-        print(f"Отладка. Локатор ID_remove: {ID_remove}")
-
         # Добавление товара в корзину
-        button_add_item = self.driver.find_element(By.XPATH, f"//button[@id='{ID_add}']")
+        product_key = self.selected_product_key
+        button_add_item = self.driver.find_element(By.XPATH, f"(//button[@class='btn btn_primary btn_small btn_inventory '])[{product_key}]")
         button_add_item.click()
-        print(f"Товар '{ID_add_product}' добавлен в корзину")
+
+        product_name = self.selected_product_name
+        print(f"Товар '{product_name}' добавлен в корзину")
 
         # цена товара на витрине (для дальнейших проверок в корзине и на финально странице)
         price_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{product_key}]")
-        self.price_inventory_text = price_inventory.text
-        print(f"Цена товара на главной странице: {self.price_inventory_text}")
+        price_inventory_text = price_inventory.text
+        self.selected_product_price = price_inventory_text
+        print(f"Цена товара на главной странице: {price_inventory_text}")
         print("-" * 20)  # разделитель текста
         time.sleep(2)
 
@@ -162,10 +132,11 @@ class SauceDemoSmokeTest:
             )
             """
             remove_button = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located((By.ID, ID_remove))
+                EC.visibility_of_element_located((By.XPATH, f"(//button[@class='btn btn_secondary btn_small btn_inventory '])[{product_key}]"))
             )
             # Проверяем текст кнопки
             actual_text_remove_button = remove_button.text
+
             assert actual_text_remove_button == "Remove"
             print(f"1. Отображается 'Remove' для товара '{product_name}'")
 
@@ -175,6 +146,7 @@ class SauceDemoSmokeTest:
             )
             # Проверяем текст счетчика
             actual_badge_text = cart_badge.text
+
             assert actual_badge_text == "1"
             print(f"2. Значок корзины +{cart_badge.text}")
             print("-" * 20)  # разделитель текста
@@ -183,11 +155,16 @@ class SauceDemoSmokeTest:
 
         except:
             print("Ошибка при добавлении товара")
+
             return False
 
 
     def verify_product_in_cart(self):
         """Проверка товара в корзине"""
+        product_key = self.selected_product_key
+        product_name = self.selected_product_name
+        price_inventory_text = self.selected_product_price
+
         try:
             # переход в корзину
             cart_link = WebDriverWait(self.driver,10).until(
@@ -205,19 +182,19 @@ class SauceDemoSmokeTest:
 
             # проверка названия товара
             cart_product_name = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "inventory_item_name"))
+                EC.presence_of_element_located((By.XPATH, f"(//div[@class='inventory_item_name'])[{product_key}]"))
             )
             assert cart_product_name.text == product_name
             print(f"Название товара в корзине корректно: {product_name}")
 
             # цена товара в корзине
-            value_xpath = "//*[@id='cart_contents_container']/div/div[1]/div[3]/div[2]/div[2]/div"
-            price_cart_inventory = self.driver.find_element(By.XPATH, f"{value_xpath}")
+            price_cart_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{product_key}]")
             print(f"Цена в корзине: {price_cart_inventory.text}")
 
             # сверка цены
             value_price_cart_inventory = price_cart_inventory.text
-            assert value_price_cart_inventory == self.price_inventory_text
+
+            assert value_price_cart_inventory == price_inventory_text
             print(f"Цена товара в корзине не отличается")
             print("-" * 20)  # разделитель текста
 
@@ -225,6 +202,7 @@ class SauceDemoSmokeTest:
 
         except Exception as e:
             print(f"Ошибка при проверке корзины: {e}")
+
             return False
 
     def checkout_page(self):
@@ -236,6 +214,7 @@ class SauceDemoSmokeTest:
 
         url_information_page = "https://www.saucedemo.com/checkout-step-one.html"
         current_url_after_checkout = self.driver.current_url
+
         assert current_url_after_checkout == url_information_page
         print(f"Current url: {url_information_page}")
 
@@ -262,6 +241,7 @@ class SauceDemoSmokeTest:
 
         url_overview_page = "https://www.saucedemo.com/checkout-step-two.html"
         current_url_after_continue = self.driver.current_url
+
         assert current_url_after_continue == url_overview_page
         print("Переход на страницу 'Checkout: Overview' выполнен")
         print("-" * 20)  # разделитель текста
@@ -272,11 +252,15 @@ class SauceDemoSmokeTest:
         # Сравниваем по товарам на витрине
         overview_inventory = self.driver.find_element(By.CLASS_NAME, 'inventory_item_name')
         name_overview_inventory = overview_inventory.text
+
         assert name_overview_inventory == self.selected_product_name
         print(f"Название товара идентично другим вкладкам ({name_overview_inventory})")
+
         # Сравниваем по товарам в корзине
+
         price_overview_inventory = self.driver.find_element(By.XPATH, "//*[@id='checkout_summary_container']/div/div[1]/div[3]/div[2]/div[2]/div")
         value_price_overview_inventory = price_overview_inventory.text
+
         assert value_price_overview_inventory == self.price_inventory_text
         print(f"Цена идентична другим вкладкам ({value_price_overview_inventory})")
 
@@ -323,6 +307,7 @@ class SauceDemoSmokeTest:
 
         complete_message = self.driver.find_element(By.XPATH, "//h2[text()='Thank you for your order!']")
         current_massage = complete_message.text
+
         assert current_massage == "Thank you for your order!"
         time.sleep(2)
         print("Сообщение 'Thank you for your order!'")
@@ -334,6 +319,7 @@ class SauceDemoSmokeTest:
         back_home_button.click()
         page_url = "https://www.saucedemo.com/inventory.html"
         current_page_url = self.driver.current_url
+
         assert page_url == current_page_url
         time.sleep(2)
         print("Домашняя страница")
@@ -347,19 +333,15 @@ if __name__ == "__main__":
     Запускаем код напрямую из файла или python current_name_file.py 
     Если через импорт, программа не запустится!
     """
-    # Выбираем товар (класс.метод)
-    product_key, product_name = SauceDemoSmokeTest.select_product()
-
     # создаем объект (объект.метод)
     test = SauceDemoSmokeTest()
-    result_settings = test.setup_browser()
-    result_authorization = test.authorization()
-    # сохраняем значение переменной в атрибуте объекта (чтобы не падала ошибка KeyError: None)
-    test.selected_product_key = product_key
-    test.selected_product_name = product_name
-
-    # Запуск методов (тесты)
+    # используем методы класса (наши тесты)
+    test.select_product()
+    test.setup_browser()
+    test.authorization()
+    test.select_item()
     test.add_product_in_cart()
+    test.select_item()
     test.verify_product_in_cart()
     test.checkout_page()
     test.add_personal_data_page()
