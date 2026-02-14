@@ -129,14 +129,11 @@ class SauceDemoSmokeTest:
             5.1 Смена кнопки на Remove
             5.2 Счетчик корзины +1
         """
-        # ID локатор "add-to-cart-"
-        ID_add_product = self.products[self.selected_product_key]
-        ID_add = f"add-to-cart-{ID_add_product.lower().replace(' ', '-')}"
+        # ID локатор "add-to-cart-" и "remove-"
+        ID_add_product = (self.products[self.selected_product_key]).lower().replace(' ', '-')
+        ID_add = f"add-to-cart-{ID_add_product}"
+        ID_remove = f"remove-{ID_add_product}"
         print(f"Отладка. Локатор ID_add: {ID_add}")
-
-        # ID локатор "remove-"
-        ID_add_product = self.products[self.selected_product_key]
-        ID_remove = f"remove-{ID_add_product.lower().replace(' ', '-')}"
         print(f"Отладка. Локатор ID_remove: {ID_remove}")
 
         # Добавление товара в корзину
@@ -145,7 +142,7 @@ class SauceDemoSmokeTest:
         print(f"Товар '{ID_add_product}' добавлен в корзину")
 
         # цена товара на витрине (для дальнейших проверок в корзине и на финально странице)
-        price_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{product_key}]")
+        price_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{self.selected_product_key}]")
         self.price_inventory_text = price_inventory.text
         print(f"Цена товара на главной странице: {self.price_inventory_text}")
         print("-" * 20)  # разделитель текста
@@ -167,7 +164,7 @@ class SauceDemoSmokeTest:
             # Проверяем текст кнопки
             actual_text_remove_button = remove_button.text
             assert actual_text_remove_button == "Remove"
-            print(f"1. Отображается 'Remove' для товара '{product_name}'")
+            print(f"1. Отображается 'Remove' для товара '{self.selected_product_name}'")
 
             # Счетчик корзины
             cart_badge = WebDriverWait(self.driver, 10).until(
@@ -208,7 +205,7 @@ class SauceDemoSmokeTest:
                 EC.presence_of_element_located((By.CLASS_NAME, "inventory_item_name"))
             )
             assert cart_product_name.text == product_name
-            print(f"Название товара в корзине корректно: {product_name}")
+            print(f"Название товара в корзине корректно: {self.selected_product_name}")
 
             # цена товара в корзине
             value_xpath = "//*[@id='cart_contents_container']/div/div[1]/div[3]/div[2]/div[2]/div"
@@ -269,13 +266,13 @@ class SauceDemoSmokeTest:
 
     def check_overview_page(self):
         """проверка заказа"""
-        # Сравниваем по товарам на витрине
+        # Сравниваем наименование товара с наименованием на витрине
         overview_inventory = self.driver.find_element(By.CLASS_NAME, 'inventory_item_name')
         name_overview_inventory = overview_inventory.text
         assert name_overview_inventory == self.selected_product_name
         print(f"Название товара идентично другим вкладкам ({name_overview_inventory})")
-        # Сравниваем по товарам в корзине
-        price_overview_inventory = self.driver.find_element(By.XPATH, "//*[@id='checkout_summary_container']/div/div[1]/div[3]/div[2]/div[2]/div")
+        # Сравниваем цену товара с ценой на витрине
+        price_overview_inventory = self.driver.find_element(By.CLASS_NAME, 'inventory_item_price')
         value_price_overview_inventory = price_overview_inventory.text
         assert value_price_overview_inventory == self.price_inventory_text
         print(f"Цена идентична другим вкладкам ({value_price_overview_inventory})")
@@ -349,6 +346,8 @@ if __name__ == "__main__":
     """
     # Выбираем товар (класс.метод)
     product_key, product_name = SauceDemoSmokeTest.select_product()
+    selected_product_key = product_key
+    selected_product_name = product_name
 
     # создаем объект (объект.метод)
     test = SauceDemoSmokeTest()
