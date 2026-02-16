@@ -41,7 +41,7 @@ class SauceDemoSmokeTest:
 
     def select_product(self):
         """
-        Захардкорженная часть - приветствие и выбор товара
+        Приветствие и выбор товара
         """
         print("-" * 20)  # разделитель текста
         print("Приветствую тебя в нашем интернет - магазине.")
@@ -49,19 +49,16 @@ class SauceDemoSmokeTest:
         f"2 - Sauce Labs Bike Light, 3 - Sauce Labs Bolt T-Shirt, 4 - Sauce Labs Fleece Jacket, "
         f"5 - Sauce Labs Onesie, 6 - Test.allTheThings() T-Shirt (Red)")
         product_key = int(input("\nВведите номер товара от 1 до 6: "))
-        self.selected_product_key = product_key  # сохраняем в атрибуте
-        print(product_key)
-
-        return product_key
+        self.selected_product_key = product_key  # НОМЕР сохраняем в переменной класса
+        print(f"Номер товара: {self.selected_product_key}")
+        print("-" * 20)
 
     def select_item(self):
         """Выбор товара через введенное число"""
         # (// div[@ data-test='inventory-item-name'])[1]
-        product_key = self.selected_product_key
-        selected_item = self.driver.find_element(By.XPATH, f"(//div[@data-test='inventory-item-name'])[{product_key}]")
-        product_name = selected_item.text
-        self.selected_product_name = product_name
-        print(f"Выбран товар: {product_key} - {product_name}")
+        selected_item = self.driver.find_element(By.XPATH, f"(//div[@data-test='inventory-item-name'])[{self.selected_product_key}]")
+        self.selected_product_name = selected_item.text
+        print(f"Выбран товар: {self.selected_product_key} - {self.selected_product_name}")
         print("-" * 20)
 
     def authorization(self):
@@ -106,15 +103,13 @@ class SauceDemoSmokeTest:
             3.2 Счетчик корзины +1
         """
         # Добавление товара в корзину
-        product_key = self.selected_product_key
-        button_add_item = self.driver.find_element(By.XPATH, f"(//button[@class='btn btn_primary btn_small btn_inventory '])[{product_key}]")
+        # product_key = self.selected_product_key
+        button_add_item = self.driver.find_element(By.XPATH, f"(//button[@class='btn btn_primary btn_small btn_inventory '])[{self.selected_product_key}]")
         button_add_item.click()
-
-        product_name = self.selected_product_name
-        print(f"Товар '{product_name}' добавлен в корзину")
+        print(f"Товар '{self.selected_product_name}' добавлен в корзину")
 
         # цена товара на витрине (для дальнейших проверок в корзине и на финально странице)
-        price_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{product_key}]")
+        price_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{self.selected_product_key}]")
         price_inventory_text = price_inventory.text
         self.selected_product_price = price_inventory_text
         print(f"Цена товара на главной странице: {price_inventory_text}")
@@ -132,13 +127,13 @@ class SauceDemoSmokeTest:
             )
             """
             remove_button = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, f"(//button[@class='btn btn_secondary btn_small btn_inventory '])[{product_key}]"))
+                EC.visibility_of_element_located((By.XPATH, f"(//button[@class='btn btn_secondary btn_small btn_inventory '])[{self.selected_product_key}]"))
             )
             # Проверяем текст кнопки
             actual_text_remove_button = remove_button.text
 
             assert actual_text_remove_button == "Remove"
-            print(f"1. Отображается 'Remove' для товара '{product_name}'")
+            print(f"1. Отображается 'Remove' для товара '{self.selected_product_name}'")
 
             # Счетчик корзины
             cart_badge = WebDriverWait(self.driver, 10).until(
@@ -182,13 +177,13 @@ class SauceDemoSmokeTest:
 
             # проверка названия товара
             cart_product_name = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, f"(//div[@class='inventory_item_name'])[{product_key}]"))
+                EC.presence_of_element_located((By.XPATH, f"(//div[@class='inventory_item_name'])[{self.selected_product_key}]"))
             )
             assert cart_product_name.text == product_name
-            print(f"Название товара в корзине корректно: {product_name}")
+            print(f"Название товара в корзине корректно: {self.selected_product_name}")
 
             # цена товара в корзине
-            price_cart_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{product_key}]")
+            price_cart_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{self.selected_product_key}]")
             print(f"Цена в корзине: {price_cart_inventory.text}")
 
             # сверка цены
@@ -261,13 +256,13 @@ class SauceDemoSmokeTest:
         price_overview_inventory = self.driver.find_element(By.XPATH, "//*[@id='checkout_summary_container']/div/div[1]/div[3]/div[2]/div[2]/div")
         value_price_overview_inventory = price_overview_inventory.text
 
-        assert value_price_overview_inventory == self.price_inventory_text
+        assert value_price_overview_inventory == self.selected_product_price
         print(f"Цена идентична другим вкладкам ({value_price_overview_inventory})")
 
     def check_total_price(self):
         """Сверка финальной цены после автоматических расчетов"""
         # преобразование стоимости в тип float
-        value_price_overview_inventory_int = self.price_inventory_text.replace('$', '')  # цена без $
+        value_price_overview_inventory_int = self.selected_product_price.replace('$', '')  # цена без $
         value_price_overview = float(value_price_overview_inventory_int)
         print("Отладка. Цена товара: " + str(value_price_overview))
 
@@ -341,7 +336,6 @@ if __name__ == "__main__":
     test.authorization()
     test.select_item()
     test.add_product_in_cart()
-    test.select_item()
     test.verify_product_in_cart()
     test.checkout_page()
     test.add_personal_data_page()
