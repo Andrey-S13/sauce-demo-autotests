@@ -33,7 +33,7 @@ class SauceDemoSmokeTest:
         self.driver.get(url_authorisation)
 
         # Настройки ожидания
-        self.driver.implicitly_wait(5)  # ждем элементы до 5 секунд
+        self.driver.implicitly_wait(3)  # ждем элементы до 3 секунд
         self.driver.maximize_window()  # на весь экран
 
         print("Настройка браузера инициализирована")
@@ -103,9 +103,10 @@ class SauceDemoSmokeTest:
             3.2 Счетчик корзины +1
         """
         # Добавление товара в корзину
-        # product_key = self.selected_product_key
         button_add_item = self.driver.find_element(By.XPATH, f"(//button[@class='btn btn_primary btn_small btn_inventory '])[{self.selected_product_key}]")
         button_add_item.click()
+
+        product_name = self.selected_product_name
         print(f"Товар '{self.selected_product_name}' добавлен в корзину")
 
         # цена товара на витрине (для дальнейших проверок в корзине и на финально странице)
@@ -120,19 +121,22 @@ class SauceDemoSmokeTest:
         try:
             # Cмена названия кнопки на Remove
             """          
-            двойные скобки, чтобы система не думала, что у нас два аргумента
+            1) двойные скобки, чтобы система не думала, что у нас два аргумента
             ((внешние скобки - вызов метода, внутренние - один кортеж-аргумент))
             (
                 EC.visibility_of_element_located((By.ID, ID_remove))
             )
+            2) XPATH: находим по имени товара -> поднимаемся до inventory-item-name -> опускаемся к кнопке Remove
             """
-            remove_button = WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, f"(//button[@class='btn btn_secondary btn_small btn_inventory '])[{self.selected_product_key}]"))
-            )
-            # Проверяем текст кнопки
-            actual_text_remove_button = remove_button.text
 
-            assert actual_text_remove_button == "Remove"
+            remove_button = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, f"(//div[@data-test='inventory-item-description'])"
+                                                            f"[{self.selected_product_key}]//"
+                                                            f"button[contains(@id, 'remove')]"))
+            )
+
+            # Проверяем текст кнопки
+            assert remove_button.text == "Remove"
             print(f"1. Отображается 'Remove' для товара '{self.selected_product_name}'")
 
             # Счетчик корзины
@@ -152,7 +156,6 @@ class SauceDemoSmokeTest:
             print("Ошибка при добавлении товара")
 
             return False
-
 
     def verify_product_in_cart(self):
         """Проверка товара в корзине"""
@@ -177,13 +180,18 @@ class SauceDemoSmokeTest:
 
             # проверка названия товара
             cart_product_name = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, f"(//div[@class='inventory_item_name'])[{self.selected_product_key}]"))
+                EC.presence_of_element_located((By.XPATH, f"//div[@class='inventory_item_name' and text()='{self.selected_product_name}']"))
             )
             assert cart_product_name.text == product_name
             print(f"Название товара в корзине корректно: {self.selected_product_name}")
 
             # цена товара в корзине
-            price_cart_inventory = self.driver.find_element(By.XPATH, f"(//div[@class='inventory_item_price'])[{self.selected_product_key}]")
+            """
+            XPATH: находим по имени > поднимаемся до cart_item > опускаемся к цене
+            """
+            price_cart_inventory = self.driver.find_element(By.XPATH, f"//div[@class='inventory_item_name' and text()='{self.selected_product_name}']/"
+                                                                      f"ancestor::div[@class='cart_item']//"
+                                                                      f"div[@class='inventory_item_price']")
             print(f"Цена в корзине: {price_cart_inventory.text}")
 
             # сверка цены
@@ -285,10 +293,13 @@ class SauceDemoSmokeTest:
         total_price_order = self.driver.find_element(By.CLASS_NAME, "summary_total_label")
         valut_total_price_order = total_price_order.text
         finish_price_order_number = valut_total_price_order.replace('Total: $', '')
+
+        finish_price_order_number_float = float(finish_price_order_number)
         # сумма стоимости товара и налога
         formula_finish_price = float(value_item_total_number) + float(value_item_tax_number)
 
-        assert formula_finish_price == float(finish_price_order_number)
+        # добавляем округделие до сотых в проверке
+        assert round(formula_finish_price, 2) == round(finish_price_order_number_float, 2)
         print("Итоговая цена правильная: " + value_item_total_number + " + " +
               value_item_tax_number + " = " + finish_price_order_number)
 
