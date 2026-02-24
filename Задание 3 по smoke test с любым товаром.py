@@ -33,7 +33,6 @@ class SauceDemoSmokeTest:
         self.driver.get(url_authorisation)
 
         # Настройки ожидания
-        self.driver.implicitly_wait(3)  # ждем элементы до 3 секунд
         self.driver.maximize_window()  # на весь экран
 
         print("Настройка браузера инициализирована")
@@ -230,8 +229,8 @@ class SauceDemoSmokeTest:
         last_name = self.driver.find_element(By.ID, "last-name")
         last_name.send_keys("Suvorov")
         # почтовый индекс
-        Postal_code = self.driver.find_element(By.ID, "postal-code")
-        Postal_code.send_keys("123456")
+        postal_code = self.driver.find_element(By.ID, "postal-code")
+        postal_code.send_keys("123456")
         time.sleep(1)
         print("Контактные данные заполнены")
 
